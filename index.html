@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>index</title>
+<style type="text/css">
+table {
+	border-collapse:collapse;
+	border:1px solid black;
+	text-align:center;
+}
+
+td ,th {
+	border:1px solid black;
+}
+</style>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript">
+$(function() {
+	
+	// Get all tweets (create time, id, and tweet text) available in the archive.
+	$('#all_tweets').click(function(){
+		$('#result').text('');
+		
+		$.ajax({
+		  type: "POST",
+		  url: "api.js",
+		  data: {"all_tweets":true},
+		  dataType: "json",
+		  success: function(data){
+			  var table = '<table><tr><th>create time</th><th>id</th><th>tweet text</th></tr>';
+			  for (var i in data) {
+				  table += '<tr><td>'+data[i].created_at+'</td><td>'+data[i].id+'</td><td>'+data[i].text+'</td></tr>';
+			  }
+			  table += '</table>';
+			  $(table).appendTo($('#result'));
+		  }
+		});
+	});
+	
+	
+	// Get all known Twitter users included in the archive
+	$('#all_users').click(function(){
+		$('#result').text('');
+		
+		$.ajax({
+		  type: "POST",
+		  url: "api.js",
+		  data: {"all_users":true},
+		  dataType: "json",
+		  success: function(data){
+			  var table = '<table><tr><th>user id</th><th>screen_name</th></tr>';
+			  for (var i in data) {
+				  table += '<tr><td>'+data[i].user_id+'</td><td>'+data[i].screen_name+'</td></tr>';
+			  }
+			  table += '</table>';
+			  $(table).appendTo($('#result'));
+		  }
+		});
+	});
+	
+	
+	/*
+	Get a list of all external links (all links that appear in any field of a tweet. Use regular
+		expressions) included in the tweets from the archive, the links should be grouped based
+		on tweet ids.
+	*/
+	$('#all_links').click(function(){
+		$('#result').text('');
+		
+		$.ajax({
+		  type: "POST",
+		  url: "api.js",
+		  data: {"all_links":true},
+		  dataType: "json",
+		  success: function(data){
+			  var table = '<table><tr><th>id</th><th>all links</th></tr>';
+			  for (var i in data) {
+				  table += '<tr><td>'+data[i].id+'</td><td>'+data[i].links.join('<br>')+'</td></tr>';
+			  }
+			  table += '</table>';
+			  $(table).appendTo($('#result'));
+		  }
+		});
+	});
+	
+	
+	// Get the details about a given tweet (given the tweet’s id).
+	$('#details').click(function(){
+		$('#result').text('');
+		
+		if (!$.trim($('#tweet_id').val())) {
+			alert("you should enter tweet’s id");
+			return false;
+		}
+		
+		$.ajax({
+		  type: "POST",
+		  url: "api.js",
+		  data: {"tweet_id":$.trim($('#tweet_id').val())},
+		  dataType: "json",
+		  success: function(data){
+			  if (data.id) {
+				  var tempStr = 'tweet’s id: ' + data.id + "<br>";
+				  tempStr += 'created time : ' + data.created_at + '<br>';
+				  tempStr += 'text : ' + data.text + '<br>';
+				  tempStr += 'user screen name : ' + data.screen_name + '<br>';
+				  $('#result').html(tempStr);
+			  } else {
+				  $('#result').text('No Find');
+			  }
+
+			  //alert(tempStr);
+		  }
+		});
+	});
+	
+	
+	// Get detailed profile information about a given Twitter user (given the user’s screen name).
+	$('#profile').click(function(){
+		$('#result').text('');
+		
+		if (!$.trim($('#user_name').val())) {
+			alert("you should enter user’s screen name");
+			return false;
+		}
+		
+		$.ajax({
+		  type: "POST",
+		  url: "api.js",
+		  data: {"user_name":$.trim($('#user_name').val())},
+		  dataType: "json",
+		  success: function(data){
+			  if (data.id) {
+				  var tempStr = 'user’s id: ' + data.id + "<br>";
+				  tempStr += 'user’s screen name : ' + data.screen_name + '<br>';
+				  tempStr += 'user’s name : ' + data.name + '<br>';
+				  tempStr += 'user’s location : ' + data.location + '<br>';
+				  tempStr += 'user’s description : ' + data.description + '<br>';
+				  $('#result').html(tempStr);
+			  } else {
+				  $('#result').text('No Find');
+			  }
+		  }
+		});
+	});
+})
+</script>
+</head>
+
+<body>
+<h1>You can retrieved data in the archive via click these buttons</h1>
+<button type="button" id="all_tweets">Get all tweets</button>
+<button type="button" id="all_users">Get all users</button>
+<button type="button" id="all_links">Get all links</button>
+
+<br><br>
+
+
+tweet’s id: <input type="text" id="tweet_id"><button type="button" id="details">Get the details about a given tweet</button>
+
+<br><br>
+
+user’s screen name:<input type="text" id="user_name"><button type="button" id="profile">Get detailed profile information</button>
+
+<br>
+
+<hr>
+<br><br>
+
+<div id="result"></div>
+
+<!--
+<form action="api.js" method="post">
+	<input type="tex" name="all_users">
+    <input type="submit" value="submit">
+</form>
+-->
+</body>
+</html>
